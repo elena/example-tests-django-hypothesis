@@ -32,7 +32,7 @@ Cool, hopefully you're comfortable  ...
 
 ## Django Testing
 
-**Are you sick of writing stupid variable names?**
+**Are you sick of writing stupid variable values?**
 
 *sadness*:
 
@@ -52,7 +52,7 @@ Cool, hopefully you're comfortable  ...
 #### Example of some Django Tests that Need Help
 
 
-*example **existings** django test*:
+*example **existing** django tests*:
 
 ![sadness](./really.gif)
 
@@ -83,7 +83,7 @@ This is just a simplified example and assumes some cool magic in your model meth
 
 So given that: maybe this kind of pattern generally looks familiar. If it does we may know that this is not good. We may know that this must be better.
 
-This is the future and now we can save ourselves some worlds of pain by using Hypothesis to instead generate **strings of craziness** on our behalf.
+This is the future and now we can save ourselves some worlds of pain by using Hypothesis to instead generate outrageous strings on our behalf.
 
 
 ## Hypothesis
@@ -104,14 +104,16 @@ There is a new bit of hypothesis jargon called: `strategies`.
 
 For your test you pick a `strategy` and then hypothesis will generate a whole bunch of craziness to use based upon this type.
 
-In our case here the `strategy` we're looking for here to replace all that grossness is called `text`. This is at: `hypothesis.strategies.text`
+In our case here the `strategy` we're looking for here to replace all that grossness is called `text`. This is at: [`hypothesis.strategies.text`](https://hypothesis.readthedocs.io/en/latest/data.html#hypothesis.strategies.text)
 
-Check out all the available strategies: https://github.com/HypothesisWorks/hypothesis/blob/master/hypothesis-python/src/hypothesis/strategies/__init__.py
+It'll generate fun grossness like you can't imagine, such as: `'+hoZh1YU]gy8'` or `'8z]EIFA06^li^'` or `'9,'` or `'l{cA=/'` or `򂀀 錀 � ꄀ 鴀 뀀 鐀 �`.
+
+There are tons of strategies and also a bunch of configuration options. You can check out [all the available strategies in the official docs](https://hypothesis.readthedocs.io/en/latest/data.html). We're keeping it simple here for the sake of the example.
 
 
 #### Then what happens:
 
-Then to quote (https://hypothesis.readthedocs.io/en/latest/)
+To quote (https://hypothesis.readthedocs.io/en/latest/)
 > It works by generating arbitrary data matching your specification and checking that your guarantee still holds in that case. If it finds an example where it doesn’t, it takes that example and cuts it down to size, simplifying it until it finds a much smaller example that still causes the problem.
 
 
@@ -156,9 +158,9 @@ Another gotcha is that our test now needs to have a wrapper and our hypothesis s
 
 `def tests_basic_add_stock_pass(self):`
 
-*after*:
+:warning: *after*:
 
-:warning: `def tests_basic_add_stock_pass(self, test_item, test_key):`
+`def tests_basic_add_stock_pass(self, test_item, test_key):`
 
 And there's the `@given` wrapper, but hopefully it's obvious what's going on here.
 
@@ -167,6 +169,7 @@ And there's the `@given` wrapper, but hopefully it's obvious what's going on her
 
 Our re-written test looks like this:
 
+:sparkles:
 
 ```
 from hypothesis import given
@@ -184,6 +187,10 @@ class TestItemAddNew(TestCase):
         check_item = Item.objects.get(key=test_key)
         assert check_item.key == test_key
 ```
+
+:sparkles:
+
+..
 
 ... and profit *(or something)*
 
@@ -215,7 +222,7 @@ https://github.com/HypothesisWorks/hypothesis/tree/master/hypothesis-python/test
 https://github.com/HypothesisWorks/hypothesis/blob/master/hypothesis-python/tests/django/toystore/models.py
 https://github.com/HypothesisWorks/hypothesis/blob/master/hypothesis-python/tests/django/toystore/test_given_models.py
 
-The hypothesis testing for django is very powerful. You can add other models and FKs, there's tremendous support for fixtures.
+The hypothesis testing for django is very powerful. You can add many other features such as FKs and other strategies, there's also tremendous support for fixtures.
 
 Django is just python and we actually have all the power of hypothesis testing for all of python, including things like `numpy` and `pandas`.
 
