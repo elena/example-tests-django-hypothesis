@@ -121,11 +121,9 @@ Then to quote (https://hypothesis.readthedocs.io/en/latest/)
 ** *!!IMPORTANT!!* **
 
 
-#### `TestCase`
+#### `hypothesis...TestCase`
 
-Note that Hypothesis **outright replaces** `TestCase`:
-
-`django.test.TestCase`
+Note that Hypothesis **outright replaces** `django.test.TestCase`.
 
 Instead import:
 
@@ -143,7 +141,7 @@ We also have to tell hypothesis explicity which model we want to test using:
 `test_item=from_model(Item)`
 
 
-#### `strategy`
+#### `strategies`
 
 We also specify out `strategy` like:
 
@@ -172,5 +170,22 @@ class TestItemAddNew(TestCase):
         check_item = Item.objects.get(key=test_key)
         assert check_item.key == test_key
 ```
+
+... and profit (or something)
+
+
+```
+$ ./manage.py test myproducts.tests
+
+Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+.
+----------------------------------------------------------------------
+Ran 1 tests in 0.156s
+
+OK
+Destroying test database for alias 'default'..
+```
+
 
 ![Winning!](./yes.gif)
