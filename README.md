@@ -36,7 +36,7 @@ Cool, hopefully you're comfortable  ...
 
 *sadness*:
 
-        def test_basic_new(self):
+        def tests_basic_new(self):
             test_item = Item.add_stock(key="TEST THIS IS A NEW ITEM")
 
 
@@ -45,7 +45,7 @@ Cool, hopefully you're comfortable  ...
 
 *sadness*:
 
-        def test_basic_new(self):
+        def tests_basic_new(self):
             test_item = Item.add_stock(key="TEST REALLY LONG TEST CASE WITH FUNNY CHARACTErS ₧ · ₨ · ₩ · ₪ · ₫ · ₭ · ₮ · ₯ · ₹")
 
 
@@ -61,9 +61,9 @@ from django.test import TestCase
 
 from myproducts.models import Item
 
-class TestItemAddNew(TestCase):
+class TestItemAddStock(TestCase):
 
-    def test_basic_add_stock_pass(self):
+    def tests_basic_add_stock_pass(self):
         test_key = "TEST THIS IS A NEW ITEM"
         test_item = Item.add_stock(key=test_key)
 
@@ -71,7 +71,7 @@ class TestItemAddNew(TestCase):
         assert check_item.key == test_key
 
 
-    def test_basic_add_stock_crazy_name_pass(self):
+    def tests_basic_add_stock_crazy_name_pass(self):
         test_key = "TEST REALLY LONG TEST CASE WITH FUNNY CHARACTErS ₧ · ₨ · ₩ · ₪ · ₫ · ₭ · ₮ · ₯ · ₹"
         test_item = Item.add_stock(key=test_key)
 
@@ -79,9 +79,11 @@ class TestItemAddNew(TestCase):
         assert check_item.key == test_key
 ```
 
-Maybe this kind of thing looks familiar and makes sense. If it does we may know that this is not good. We may know that this must be better.
+This is just a simplified example and assumes some cool magic in your model method `Item.add_stock()` for which this test makes sense.
 
-We could save ourselves all kinds of worlds of pain by using Hypothesis to instead generate **our strings of craziness** on our behalf.
+So given that: maybe this kind of pattern generally looks familiar. If it does we may know that this is not good. We may know that this must be better.
+
+This is the future and now we can save ourselves some worlds of pain by using Hypothesis to instead generate **strings of craziness** on our behalf.
 
 
 ## Hypothesis
@@ -102,9 +104,7 @@ There is a new bit of hypothesis jargon called: `strategies`.
 
 For your test you pick a `strategy` and then hypothesis will generate a whole bunch of craziness to use based upon this type.
 
-In our case here the `strategy` we're looking for here to replace all that grossness is basically called `text`.
-
-In hypothesis this is at: `hypothesis.strategies.text`
+In our case here the `strategy` we're looking for here to replace all that grossness is called `text`. This is at: `hypothesis.strategies.text`
 
 Check out all the available strategies: https://github.com/HypothesisWorks/hypothesis/blob/master/hypothesis-python/src/hypothesis/strategies/__init__.py
 
@@ -118,10 +118,9 @@ Then to quote (https://hypothesis.readthedocs.io/en/latest/)
 ### Let's Rewrite this Test!
 
 
-** *!!IMPORTANT!!* **
-
-
 #### `hypothesis...TestCase`
+
+** :warning: IMPORTANT **
 
 Note that Hypothesis **outright replaces** `django.test.TestCase`.
 
@@ -129,6 +128,14 @@ Instead import:
 
 `from hypothesis.extra.django import TestCase`
 
+
+#### `strategies`
+
+We also specify our `strategy` like:
+
+`import hypothesis.strategies as st`
+
+`test_key=st.text()`
 
 
 #### `from_model`
@@ -140,16 +147,23 @@ We also have to tell hypothesis explicity which model we want to test using:
 
 `test_item=from_model(Item)`
 
+:warning: That is: don't use `Item.add_stock()` in your test, here use `test_item.add_stock()` instead.
 
-#### `strategies`
 
-We also specify out `strategy` like:
+Another gotcha is that our test now needs to have a wrapper and our hypothesis stuff as args:
 
-`import hypothesis.strategies as st`
+*before*:
 
-`test_key=st.text()`
+`def tests_basic_add_stock_pass(self):`
 
-#### Go already ...
+*after*:
+
+:warning: `def tests_basic_add_stock_pass(self, test_item, test_key):`
+
+And there's the `@given` wrapper, but hopefully it's obvious what's going on here.
+
+
+### Go already ...
 
 Our re-written test looks like this:
 
@@ -164,14 +178,14 @@ from myproducts.models import Item
 class TestItemAddNew(TestCase):
 
     @given(test_item=from_model(Item), test_key=st.text())
-    def test_basic_add_stock_pass(self, test_item, test_key):
+    def tests_basic_add_stock_pass(self, test_item, test_key):
         test_item = test_item.add_stock(key=test_key)
 
         check_item = Item.objects.get(key=test_key)
         assert check_item.key == test_key
 ```
 
-... and profit (or something)
+... and profit *(or something)*
 
 
 ```
@@ -189,3 +203,20 @@ Destroying test database for alias 'default'..
 
 
 ![Winning!](./yes.gif)
+
+
+This is just a basic start, there is way more information about Hypothesis testing.
+
+Official docs: https://hypothesis.readthedocs.io/en/latest/django.html
+
+It can also be useful to refer to the source test app here:
+
+https://github.com/HypothesisWorks/hypothesis/tree/master/hypothesis-python/tests/django/toystore
+https://github.com/HypothesisWorks/hypothesis/blob/master/hypothesis-python/tests/django/toystore/models.py
+https://github.com/HypothesisWorks/hypothesis/blob/master/hypothesis-python/tests/django/toystore/test_given_models.py
+
+The hypothesis testing for django is very powerful. You can add other models and FKs, there's tremendous support for fixtures.
+
+Django is just python and we actually have all the power of hypothesis testing for all of python, including things like `numpy` and `pandas`.
+
+Many thanks and :sparkling_heart: to contributors everywhere but here especially to all the https://github.com/HypothesisWorks/hypothesis/graphs/contributors
